@@ -1,0 +1,17 @@
+# -*- coding: utf-8 -*-
+
+IMAP_USER = ''
+
+IMAP_PWD = ''
+
+IMAP_HOST = ''
+
+IMAP_PORT = 993
+
+SUBJECT_PATTERN = r''
+
+TMP_FILE = '/tmp/mailalert.tmp'
+# Sleep time as second.
+SLEEP_TIME = 30
+
+EXECUTE_ON_ALARM =  

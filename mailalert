@@ -1,0 +1,70 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import imaplib
+import os
+import re
+import subprocess
+import sys
+import time
+
+from email.parser import Parser
+from email.header import decode_header
+
+from conf import *
+
+pattern = re.compile(SUBJECT_PATTERN)
+
+def get_latest_message():
+    imap = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
+    imap.login(IMAP_USER, IMAP_PWD)
+    if not imap.state == 'AUTH':
+        raise Exception('Not authenticated.')
+    imap.select()
+    type, data = imap.search(None, 'ALL')
+    messages = data[0].split()
+    latest_message = None
+    if messages:
+        parser = Parser()
+        latest_message_nr = messages[-1]
+        type, data = imap.fetch(latest_message_nr, '(RFC822)')
+        latest_message = parser.parsestr(data[0][1])
+    imap.close()
+    imap.logout()
+    return latest_message
+    
+
+def run_executable(command):
+    try:
+        subprocess.call(command.split())
+    except OSError:
+        raise Exception('Error accored while executing command %s' % command)
+
+
+def is_new_message(message_id):
+    last_message_id = None
+    try:
+        with open(TMP_FILE, 'r') as f:
+            last_message_id = f.read()
+    except IOError:
+        pass
+    finally:
+        with open(TMP_FILE, 'w+') as f:
+            f.write(message_id)
+    return last_message_id != message_id
+
+
+if __name__ == '__main__':
+    try:
+        while True:
+            latest_message = get_latest_message()
+            message_id = latest_message['Message-ID']
+            subject, encoding = decode_header(latest_message['Subject'])[0]
+            subject = encoding and subject.upper().decode(encoding) or subject.upper()
+            if pattern.match(subject) and is_new_message(message_id):
+                run_executable(EXECUTE_ON_ALARM)
+    except (Exception), e:
+        print e
+        sys.exit(1)
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit(0)
+        
