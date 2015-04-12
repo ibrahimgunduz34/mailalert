@@ -11,7 +11,16 @@ IMAP_PORT = 993
 SUBJECT_PATTERN = r''
 
 TMP_FILE = '/tmp/mailalert.tmp'
-# Sleep time as second.
-SLEEP_TIME = 30
 
-EXECUTE_ON_ALARM =  
+# Interval time as second for checking new messages.
+CHECKING_INTERVAL = 30
+
+EXECUTE_ON_ALARM =  ''
+
+# Also you can use the multiple rules in RULES key 
+# instead of SUBJECT_PATTERN AND EXECUTE_ON_ALARM 
+# for checking message.
+# RULES = (
+# 		{'pattern': r'MKF WEB SİTE|MKF WEB SITE|mkf web site',
+# 		'exec': 'mpg123 GodFotherHorn.mp3'}
+# 	)

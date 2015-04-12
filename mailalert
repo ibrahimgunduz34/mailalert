@@ -7,16 +7,15 @@ import subprocess
 import sys
 import time
 
-from email.parser import Parser
 from email.header import decode_header
+from email.parser import Parser
 
-from conf import *
+import conf
 
-pattern = re.compile(SUBJECT_PATTERN)
 
 def get_latest_message():
-    imap = imaplib.IMAP4_SSL(host=IMAP_HOST, port=IMAP_PORT)
-    imap.login(IMAP_USER, IMAP_PWD)
+    imap = imaplib.IMAP4_SSL(host=conf.IMAP_HOST, port=conf.IMAP_PORT)
+    imap.login(conf.IMAP_USER, conf.IMAP_PWD)
     if not imap.state == 'AUTH':
         raise Exception('Not authenticated.')
     imap.select()
@@ -43,12 +42,12 @@ def run_executable(command):
 def is_new_message(message_id):
     last_message_id = None
     try:
-        with open(TMP_FILE, 'r') as f:
+        with open(conf.TMP_FILE, 'r') as f:
             last_message_id = f.read()
     except IOError:
         pass
     finally:
-        with open(TMP_FILE, 'w+') as f:
+        with open(conf.TMP_FILE, 'w+') as f:
             f.write(message_id)
     return last_message_id != message_id
 
@@ -60,8 +59,23 @@ if __name__ == '__main__':
             message_id = latest_message['Message-ID']
             subject, encoding = decode_header(latest_message['Subject'])[0]
             subject = encoding and subject.upper().decode(encoding) or subject.upper()
-            if pattern.match(subject) and is_new_message(message_id):
-                run_executable(EXECUTE_ON_ALARM)
+            if hasattr(conf, 'RULES'):
+                for rule in conf.RULES:
+                    matching_rule = rule.get('pattern')
+                    command = rule.get('exec')
+                    pattern = re.compile(matching_rule)
+                    if pattern.match(subject) and is_new_message(message_id):
+                        run_executable(command)
+            elif hasattr(conf, 'SUBJECT_PATTERN') and hasattr(conf, 'EXECUTE_ON_ALARM'):
+                pattern = re.compile(conf.SUBJECT_PATTERN)
+                if pattern.match(subject) and is_new_message(message_id):
+                    run_executable(conf.EXECUTE_ON_ALARM)
+            else:
+                raise Exception('Configuration must contains SUBJECT_PATTERN '
+                                'and EXECUTE_ON_ALARM keys or RULES key for '
+                                'pattern matching.')
+            
+            time.sleep(conf.CHECKING_INTERVAL)
     except (Exception), e:
         print e
         sys.exit(1)
