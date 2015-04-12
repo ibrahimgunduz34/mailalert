@@ -33,7 +33,9 @@ TMP_FILE = '/tmp/mailalert.tmp'
 # Interval time as second for checking new messages.
 CHECKING_INTERVAL = 30
 
-# You can use SUBJECT_PATTERN and EXECUTE_ON_ALARM keys for the specific pattern matching or can use RULES key for checking by multiple pattern matching.
+# You can use SUBJECT_PATTERN and EXECUTE_ON_ALARM keys for 
+# the specific pattern matching or can use RULES key for 
+# checking by multiple pattern matching.
 
 # SUBJECT_PATTERN = r'This your subject pattern as regex'
 # EXECUTE_ON_ALARM = 'mpg123 GodFotherHorn.mp3' 
@@ -41,7 +43,7 @@ CHECKING_INTERVAL = 30
 # or
 
 # RULES = (
-# 		{'pattern': r'MKF WEB SİTE|MKF WEB SITE|mkf web site',
+# 		{'pattern': r'This your subject pattern as regex|THIS IS YOUR SUBJECT PATTERN AS REGEX',
 #		 'exec': 'mpg123 GodFotherHorn.mp3'},
 #	)
 
